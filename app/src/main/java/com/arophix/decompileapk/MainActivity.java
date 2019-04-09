@@ -7,7 +7,6 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     
-    // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
@@ -17,9 +16,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        Boolean bTamperingSucces = false;
+    
         // Example of a call to a native method
         TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+        if (!bTamperingSucces) {
+            tv.setText(stringFromJNI());
+        } else {
+            tv.setText("Hello, Android reverse engineer!");
+        }
     }
     
     /**
