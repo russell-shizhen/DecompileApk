@@ -5,16 +5,16 @@ To tamper a `Boolean` value, i.e. the `Boolean bTamperingSucces = false;`, or so
 
 ## Tools required
 ### apktool
- `apktool` can be feteched from [Apktool website]([https://ibotpeaches.github.io/Apktool/](https://ibotpeaches.github.io/Apktool/)).  Just follow the steps inside this page to install apktool. 
+ `apktool` can be feteched from [Apktool website](https://ibotpeaches.github.io/Apktool/).  Just follow the steps inside this page to install apktool. 
 
 ### adb 
 `adb` is shipped with Android SDK, it can be found from directory `<your-some-path>/Android/sdk/platform-tools/adb`
 
 ### apksigner
-`apksigner` is to sign your apk with a keystore file. This tool can be found at directory ``, and the usage is documented at [command-line apksigner]([https://developer.android.com/studio/command-line/apksigner](https://developer.android.com/studio/command-line/apksigner)).
+`apksigner` is to sign your apk with a keystore file. This tool can be found at directory ``, and the usage is documented at [command-line apksigner](https://developer.android.com/studio/command-line/apksigner).
 
 ## Steps 
-1. Clone the example project from [DecompileApk]([https://github.com/russell-shizhen/DecompileApk](https://github.com/russell-shizhen/DecompileApk)). 
+1. Clone the example project from [DecompileApk](https://github.com/russell-shizhen/DecompileApk). 
 2. Find the already compiled apk file `DecompileApk/app/release/app-release.apk`.
 3. Decompile it using **apktool**. 
     ```bash
