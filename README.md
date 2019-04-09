@@ -11,7 +11,7 @@ To tamper a `Boolean` value, i.e. the `Boolean bTamperingSucces = false;`, or so
 `adb` is shipped with Android SDK, it can be found from directory `<your-some-path>/Android/sdk/platform-tools/adb`
 
 ### apksigner
-`apksigner` is to sign your apk with a keystore file. This tool can be found at directory ``, and the usage is documented at [command-line apksigner](https://developer.android.com/studio/command-line/apksigner).
+`apksigner` is to sign your apk with a keystore file. This tool can be found at directory `<ANDROID_HOME>/Android/sdk/build-tools/28.0.3/apksigner`, and the usage is documented at [command-line apksigner](https://developer.android.com/studio/command-line/apksigner).
 
 ## Steps 
 1. Clone the example project from [DecompileApk](https://github.com/russell-shizhen/DecompileApk). 
