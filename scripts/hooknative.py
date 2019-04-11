@@ -33,24 +33,49 @@ def native_hooking_scripts():
         // Change the returned String
         onLeave: function (retval) {
             console.log("ret: " + retval);
-            const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer.");
+            const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer by function name.");
             retval.replace(dstAddr);
         }
     });
 
-    // Frida official example
-    Interceptor.attach(Module.getExportByName('libc.so', 'read'), {
-        onEnter: function (args) {
-            this.fileDescriptor = args[0].toInt32();
-            console.log("libc.so read() onEnter called.");
-            console.log("this.fileDescriptor: " + this.fileDescriptor);
-        },
+    // see: https://www.frida.re/docs/functions/
+    var baseAddr = Module.findBaseAddress(moduleName);
+    Interceptor.attach(baseAddr.add(nativeFuncAddr), {
+        onEnter: function(args) {
+            console.log("[-] hook invoked");
+            console.log("nativeFuncAddr:" + nativeFuncAddr);
+        }
+        // Change the returned String
         onLeave: function (retval) {
-            console.log("libc.so read() onLeave called, retval:  " + retval);
-            if (retval.toInt32() > 0) {
-                /* do something with this.fileDescriptor */
-                
+            console.log("ret: " + retval);
+            const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer by address.");
+            retval.replace(dstAddr);
+        }
+    });
+
+    // Frida official example https://www.frida.re/docs/javascript-api/, search "Interceptor"
+    Interceptor.attach(Module.getExportByName(null, 'read'), {
+        onEnter: function (args) {
+            console.log('Context information:');
+            console.log('Context  : ' + JSON.stringify(this.context));
+            console.log('Return   : ' + this.returnAddress);
+            console.log('ThreadId : ' + this.threadId);
+            console.log('Depth    : ' + this.depth);
+            console.log('Errornr  : ' + this.err);
+
+            // Save arguments for processing in onLeave.
+            this.fd = args[0].toInt32();
+            this.buf = args[1];
+            this.count = args[2].toInt32();
+        },
+        onLeave: function (result) {
+            console.log('----------')
+            // Show argument 1 (buf), saved during onEnter.
+            var numBytes = result.toInt32();
+            if (numBytes > 0) {
+            console.log(hexdump(this.buf, { length: numBytes, ansi: true }));
             }
+            console.log('Result   : ' + numBytes);
         }
     });
 
