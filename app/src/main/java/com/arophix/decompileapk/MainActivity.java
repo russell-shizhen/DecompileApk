@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!bTamperingSucces) {
             tv.setText(stringFromJNI());
         } else {
-            tv.setText("Hello, Android reverse engineer!");
+            //tv.setText("Hello, Android reverse engineer!");
+            tv.setText(stringFromJNI());
         }
     }
 }
