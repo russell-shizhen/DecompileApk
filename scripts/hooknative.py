@@ -7,7 +7,7 @@ package_name = "com.arophix.decompileapk"
 def native_hooking_scripts_1():
     hook_code = """
 	var moduleName = "libnative-lib.so"; 
-    var nativeFuncAddr = 0x00004d10; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
+    var targetFuncAddr = 0x00004d80; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
 
     Interceptor.attach(Module.findExportByName(null, "dlopen"), {
         onEnter: function(args) {
@@ -30,7 +30,7 @@ def native_hooking_scripts_1():
 def native_hooking_scripts_2():
     hook_code = """
 	var moduleName = "libnative-lib.so"; 
-    var nativeFuncAddr = 0x00004d10; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
+    var targetFuncAddr = 0x00004d80; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
 
     
     Interceptor.attach (Module.findExportByName (moduleName, "Java_com_arophix_decompileapk_MainActivity_stringFromJNI"), {
@@ -93,7 +93,7 @@ def native_hooking_scripts_3():
 def native_hooking_scripts_3_2():
     hook_code = """
 	var moduleName = "libnative-lib.so"; 
-    var nativeFuncAddr = '0x00004d10'; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
+    var targetFuncAddr = '0x00004d80'; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
     
     // see: https://www.frida.re/docs/functions/ 
     function memAddress(memBase, idaBase, idaAddr) {
@@ -111,7 +111,7 @@ def native_hooking_scripts_3_2():
     var IDABASE = '0x000000000';
     var BASE = Module.findBaseAddress('libnative-lib.so');
 
-    Interceptor.attach(memAddress(BASE, IDABASE, '0x00004d10'), {
+    Interceptor.attach(memAddress(BASE, IDABASE, '0x00004d80'), {
         onEnter: function(args){
             console.log("INSIDE PROVISIONING_CONT FUNCTION");
             console.log(ptr(args[2].toInt32()));
@@ -163,7 +163,7 @@ def native_hooking_scripts_5():
     hook_code = """
 
     var moduleName = 'libart.so'; 
-    var nativeFuncAddr = '0x00004d10'; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
+    var targetFuncAddr = '0x00004d80'; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
     
     Java.perform(function () {    
         console.log("moduleName: " + moduleName);
