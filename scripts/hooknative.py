@@ -39,17 +39,38 @@ def native_hooking_scripts():
     });
 
     // see: https://www.frida.re/docs/functions/
-    var baseAddr = Module.findBaseAddress(moduleName);
-    Interceptor.attach(baseAddr.add(nativeFuncAddr), {
-        onEnter: function(args) {
-            console.log("[-] hook invoked");
-            console.log("nativeFuncAddr:" + nativeFuncAddr);
-        }
-        // Change the returned String
-        onLeave: function (retval) {
-            console.log("ret: " + retval);
-            const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer by address.");
-            retval.replace(dstAddr);
+    Module.enumerateSymbolsSync(moduleName).forEach(function(symbol){
+        switch (symbol.name) {
+            case "Java_com_arophix_decompileapk_MainActivity_stringFromJNI":
+                /*
+                    $ c++filt "_ZN3art3JNI21RegisterNativeMethodsEP7_JNIEnvP7_jclassPK15JNINativeMethodib"
+                    art::JNI::RegisterNativeMethods(_JNIEnv*, _jclass*, JNINativeMethod const*, int, bool)
+                */
+                var RegisterNativeMethodsPtr = symbol.address;
+                console.log("RegisterNativeMethods is at " + RegisterNativeMethodsPtr);
+                Interceptor.attach(RegisterNativeMethodsPtr, {
+                    onEnter: function(args) {
+                        console.log("[-] hook invoked");
+                        console.log("RegisterNativeMethodsPtr:" + RegisterNativeMethodsPtr);
+                        console.log("Java_com_arophix_decompileapk_MainActivity_stringFromJNI called with address.");
+                    },
+                    onLeave: function (retval) {
+                        console.log("ret: " + retval);
+                        const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer by address.");
+                        retval.replace(dstAddr);
+                    }
+                });
+                break;
+            case "_ZN3art3JNI9FindClassEP7_JNIEnvPKc": // art::JNI::FindClass
+                Interceptor.attach(symbol.address, {
+                    onEnter: function(args) {
+                        if (args[1] != null) {
+                            jclassAddress2NameMap[args[0]] = Memory.readCString(args[1]);
+                        }
+                    },
+                    onLeave: function (ignoredReturnValue) {}
+                });
+                break;
         }
     });
 
