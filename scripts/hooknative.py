@@ -22,20 +22,23 @@ def native_hooking_scripts():
         }
     });
 
-    Interceptor.attach (Module.findExportByName ( moduleName, "Java_com_arophix_decompileapk_MainActivity_stringFromJNI"), {
+    // Hook the JNI function by function name
+    Interceptor.attach (Module.findExportByName (moduleName, "Java_com_arophix_decompileapk_MainActivity_stringFromJNI"), {
         onEnter: function (args) {
             // send (Memory.readUtf8String (args [1]));     
             // print("[!] " +"onEnter called...")
             // this.lib = Memory.readUtf8String(args[0]);
             console.log("Java_com_arophix_decompileapk_MainActivity_stringFromJNI called with: ");
         },
+        // Change the returned String
         onLeave: function (retval) {
-            //print("[!] " +"onLeave called...")
-            //retval.replace("Frida hooking ongoing ...");
             console.log("ret: " + retval);
-            }
-        });
+            const dstAddr = Java.vm.getEnv().newStringUtf("Frida is hooking this displayed text from Native layer.");
+            retval.replace(dstAddr);
+        }
+    });
 
+    // Frida official example
     Interceptor.attach(Module.getExportByName('libc.so', 'read'), {
         onEnter: function (args) {
             this.fileDescriptor = args[0].toInt32();
@@ -71,7 +74,7 @@ def on_message(message, data):
         print(message)
 script.on('message', on_message)
 
-print('[*] Running IDP Hook Test ...')
+print('[*] Running Arophix Hook Test ...')
 
 script.load()
 sys.stdin.read()
