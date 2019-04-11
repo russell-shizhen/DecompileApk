@@ -3,45 +3,42 @@ import sys
 
 package_name = "com.arophix.decompileapk"
 
-
-def get_messages_from_js(message, data):
-            #print(message)
-            print (message['payload'])
- 
-
-def instrument_debugger_checks():
+def native_hooking_scripts():
     hook_code = """
-	var didHookApis = false;
-	Interceptor.attach(Module.findExportByName(null, 'dlopen'), {
-	  onEnter: function (args) {
-	    this.path = Memory.readUtf8String(args[0]);
-		console.log(this.path);
-	  },
-	  onLeave: function (retval) {
-	    if(!retval.isNull() && this.path.indexOf('libnative-lib.so')!== -1 && !didHookApis) {
-		  didHookApis = true;
-	      console.log("File loaded hooking");
-	      hooknative2();
-	      // ...
-	    }
-	  }
-	});
-	function hooknative2(){
-        Interceptor.attach (Module.findExportByName ( "libnative-lib.so", "Java_com_devadvance_rootinspector_Root_checkifstream"), {
-                onLeave: function (retval) {
-                    retval.replace(0);
+
+	var moduleName = "libnative-lib.so"; 
+    var nativeFuncAddr = 0x00004d10; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
+
+    Interceptor.attach(Module.findExportByName(null, "strcmp"), {
+        onEnter: function(args) {
+            this.lib = Memory.readUtf8String(args[0]);
+            console.log("dlopen called with: " + this.lib);
+        },
+        onLeave: function(retval) {
+            
         }
-        });
-    }
-    
+    });
     """
     return hook_code
 
 device=frida.get_usb_device()
 #run package
-process = device.attach("com.arophix.decompileapk")
-script = process.create_script(instrument_debugger_checks())
-script.on('message',get_messages_from_js)
+process = device.attach(package_name)
+script = process.create_script(native_hooking_scripts())
+
+# Here's some message handling..
+# [ It's a little bit more meaningful to read as output :-D
+#   Errors get [!] and messages get [i] prefixes. ]
+def on_message(message, data):
+    if message['type'] == 'error':
+        print("[!] " + message['stack'])
+    elif message['type'] == 'send':
+        print("[i] " + message['payload'])
+    else:
+        print(message)
+script.on('message', on_message)
+
 print('[*] Running IDP Hook Test ...')
+
 script.load()
 sys.stdin.read()
