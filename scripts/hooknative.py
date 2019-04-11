@@ -8,28 +8,18 @@ def native_hooking_scripts():
 	var moduleName = "libnative-lib.so"; 
     var nativeFuncAddr = 0x00004d10; // $ nm --demangle --dynamic libnative-lib.so | grep "stringFromJNI"
 
-    Interceptor.attach(Module.findExportByName(null, "dlopen"), {
-        onEnter: function(args) {
-            this.lib = Memory.readUtf8String(args[0]);
-            console.log("dlopen called with: " + this.lib);
+    Interceptor.attach (Module.findExportByName ( moduleName, "Java_com_arophix_decompileapk_MainActivity_stringFromJNI"), {
+        onEnter: function (args) {
+            // send (Memory.readUtf8String (args [1]));     
+            // print("[!] " +"onEnter called...")
+            // this.lib = Memory.readUtf8String(args[0]);
+            console.log("Java_com_arophix_decompileapk_MainActivity_stringFromJNI called with: ");
         },
-        onLeave: function(retval) {
-            if (this.lib.endsWith(moduleName)) {
-                console.log("ret: " + retval);
-                var baseAddr = Module.findBaseAddress(moduleName);
-                Interceptor.attach(baseAddr.add(nativeFuncAddr), {
-                    onEnter: function(args) {
-                        console.log("[-] hook invoked");
-                        console.log(JSON.stringify({
-                            a1: args[1].toInt32(),
-                            a2: Memory.readUtf8String(Memory.readPointer(args[2])),
-                            a3: Boolean(args[3])
-                        }, null, '\t'));
-                    }
-                });
+        onLeave: function (retval) {
+            //print("[!] " +"onLeave called...")
+            //retval.replace("Frida hooking ongoing ...");
             }
-        }
-    });
+        });
 
     
     """
