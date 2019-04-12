@@ -92,9 +92,11 @@ All the steps mentioned below are on macOS Mojave
 
     This will also ensure that the adb daemon is running on your desktop, which allows Frida to discover and communicate with your device regardless of whether you’ve got it hooked up through USB or WiFi.
 
-### Install `frida-server` on Device (or Emulator)
+### Install `frida-server` on Emulator (or Real Device)
 
-First off, download the latest `frida-server` for Android from  [frida-server releases page](https://github.com/frida/frida/releases), e.g. for Android `arm64-v8a` devices, you should download [frida-server-12.4.7-android-arm64.xz](https://github.com/frida/frida/releases/download/12.4.7/frida-server-12.4.7-android-arm64.xz),  and get it running on your device:
+Below steps are based on **Android Emulator Nexus 6P (x86)** api 23 on macOS Majave.
+
+First off, download the latest `frida-server` for Android from  [frida-server releases page](https://github.com/frida/frida/releases), e.g. for Android `x86` emulator, you should download [frida-server-12.4.7-android-x86.xz](https://github.com/frida/frida/releases/download/12.4.7/frida-server-12.4.7-android-x86.xz),  and get it run on your emulator:
 
 ```bash
 adb root # might be required 
@@ -262,7 +264,7 @@ Hooking Android C source code using Frida.
     You should see below outputs:
 
     ```bash
-    00004d10 T Java_com_arophix_decompileapk_MainActivity_stringFromJNI
+    00004d80 T Java_com_arophix_decompileapk_MainActivity_stringFromJNI
     000090b0 T std::bad_typeid::what() const
     00005cf0 T std::bad_exception::what() const
     00005e70 T std::bad_array_length::what() const
@@ -270,4 +272,49 @@ Hooking Android C source code using Frida.
     00008ff0 T std::bad_cast::what() const
     ...
     ```
-    
+
+3. Hook C function by name
+
+    Find the script from [hooknative-by-function-name.py](https://github.com/russell-shizhen/DecompileApk/blob/master/scripts/hooknative-by-function-name.py) and run it using below command, and then click on the button of your started Android app.
+
+    ```bash
+    $ python3 hooknative-by-function-name.py
+
+    [*] Running Arophix Hook Test ...
+    Java_com_arophix_decompileapk_MainActivity_stringFromJNI called with:
+    ret: 0x200019
+    ```
+
+    If you see an error like below:
+
+    ```bash
+    frida.ServerNotRunningError: unable to connect to remote frida-server: closed
+    ```
+
+    Remember that you have started `frida-server` on your emulator.
+
+    Meanwhile, on your emulator screen, you shoud see the text changed to `Frida is hooking this displayed text from Native layer by function name.` if success.
+
+4. Hook C function by address
+
+    Find the script from [hooknative-by-function-address.py](https://github.com/russell-shizhen/DecompileApk/blob/master/scripts/hooknative-by-function-address.py) and run it using below command, and then click on the button of your started Android app.
+
+    ```bash
+    $ python3 hooknative-by-function-address.py
+
+    [*] Running Arophix Hook Test ...
+    [+] membase: 0xb2acd000
+    [+] addressOfStringFromJni: 0xb2ad1d80
+    [++] addressOfStringFromJni: 0xb2ad1d80
+    ret: 0x19
+    ```
+
+    If you see an error like below:
+
+    ```bash
+    frida.ServerNotRunningError: unable to connect to remote frida-server: closed
+    ```
+
+    Remember that you have started `frida-server` on your emulator.
+
+    Meanwhile, on your emulator screen, you shoud see the text changed to `Frida is hooking this displayed text from Native layer by function address.` if success.

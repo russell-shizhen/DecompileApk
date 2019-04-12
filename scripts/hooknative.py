@@ -51,7 +51,7 @@ def native_hooking_scripts_2():
     """
     return hook_code
 
-# Hook the JNI function by function address -- Not yet working ...
+# Hook the JNI function by function address -- Worked :)
 def native_hooking_scripts_3():
     hook_code = """
 	var moduleName = "libnative-lib.so"; 
