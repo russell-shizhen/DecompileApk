@@ -1,6 +1,150 @@
-# Using Apktool and Frida to do reverse engineering on Android Apk
+# Android Apk reverse engineering using Apktool and Frida
 
-## Target 1
+## Table of Content
+
+1. [Environment Setup (macOS mojave)](#Environment-Setup)
+2. [Tamper Smali Code](#Tamper-Smali-Code)
+3. [Hooking Android Java Methods](#Hooking-Android-Java-Methods)
+4. [Hooking Android C Functions](#Hooking-Android-C-Functions)
+
+## [Environment Setup (macOS mojave)](#{name=Environment-Setup})
+
+All the steps mentioned below are on macOS Mojave
+
+### Install Tools on PC
+
+1. Install `frida-tools` with pip3
+
+    Run command `$ pip --version` and `$ pip3 --version` to check which *pip* is from at **Python 3x**.  E.g. you should see version information like below:
+
+    ```bash
+    pip 19.0.3 from /usr/local/lib/python3.7/site-packages/pip (python 3.7)
+    ```
+
+    Then run the right **pip** command to install `frida-tools`, e.g.  `pip3` 
+
+    ```bash
+    pip3 install frida-tools
+    ```
+
+    Success outputs:
+
+    ```bash
+    ....
+    Successfully built frida-tools frida
+
+    Installing collected packages: colorama, frida, six, wcwidth, prompt-toolkit, pygments, frida-tools
+
+    Successfully installed colorama-0.4.1 frida-12.4.7 frida-tools-1.3.2 prompt-toolkit-2.0.9 pygments-2.3.1 six-1.12.0 wcwidth-0.1.7
+    ```
+
+2. Testing your installation
+
+    Copy the `cat` binary to a temporary folder, e.g., `/tmp/cat` then run `cat` from that directory:
+
+    ```bash
+    mkdir ~/frida
+    cp /bin/cat /frida/cat
+    /frida/cat
+    ```
+
+    In another terminal, make a file `example.py` with the following contents:
+
+    ```python
+    import frida
+
+    def on_message(message, data):
+        print("[on_message] message:", message, "data:", data)
+
+    session = frida.attach("cat")
+
+    script = session.create_script("""'use strict';
+
+    rpc.exports.enumerateModules = function () {
+    return Process.enumerateModulesSync();
+    };
+    """)
+    script.on("message", on_message)
+    script.load()
+
+    print([m["name"] for m in script.exports.enumerate_modules()])
+    ```
+
+    Then run the `example.py` script with below command
+
+    ```bash
+    python3 example.py
+    ```
+
+    The output should be something similar to this (depending on your platform and library versions):
+
+    ```py
+    [u'cat', …, u'ld-2.15.so']
+    ```
+
+3. Android `adb` command
+
+    Make sure  `adb`  can see your device:
+
+    ```bash
+    adb devices -l
+    ```
+
+    This will also ensure that the adb daemon is running on your desktop, which allows Frida to discover and communicate with your device regardless of whether you’ve got it hooked up through USB or WiFi.
+
+### Install `frida-server` on Device (or Emulator)
+
+First off, download the latest `frida-server` for Android from  [frida-server releases page](https://github.com/frida/frida/releases), e.g. for Android `arm64-v8a` devices, you should download [frida-server-12.4.7-android-arm64.xz](https://github.com/frida/frida/releases/download/12.4.7/frida-server-12.4.7-android-arm64.xz),  and get it running on your device:
+
+```bash
+adb root # might be required 
+adb push frida-server /data/local/tmp/
+adb shell "chmod 755 /data/local/tmp/frida-server"
+adb shell "/data/local/tmp/frida-server &"
+```
+
+For the last step, if you see below error:
+
+```bash
+Unable to load SELinux policy from the kernel: Failed to open file “/sys/fs/selinux/policy”: Permission denied
+```
+
+Then you need to run `frida-server` using the root shell, e.g.
+
+```bash
+$ adb shell
+angler:/ $ su
+angler:/ # /data/local/tmp/frida-server &
+[1] 12089
+angler:/ #
+```
+
+`[1] 12089` is the process id of `frida-server`.
+
+### A quick smoke-test
+
+Now, on your desktop it’s time to make sure the basics are working. Run:
+
+```bash
+frida-ps -U
+```
+
+This should give you a process list along the lines of:
+
+```bash
+  PID  Name
+-----  ---------------------------------------------------
+  721  ATFWD-daemon
+ 4450  adbd
+  730  android.hardware.biometrics.fingerprint@2.1-service
+  407  android.hardware.configstore@1.0-service
+  408  android.hardware.graphics.allocator@2.0-service
+  409  android.hardware.usb@1.0-service
+  410  android.hardware.wifi@1.0-service
+  406  android.hidl.allocator@1.0-service
+```
+
+## [Tamper Smali Code](#{name=Tamper-Smali-Code})
 
 To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperingSucces = false;`, or some other code you have interest in.
 
@@ -90,12 +234,10 @@ To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperin
 
 10. Instead of seeing `"Hello from C++"` from the screen, you should now see `"Hello, Android reverse engineer!"`.
 
-## Target 2
+## [Hooking Android Java Methods](#{name=Hooking-Android-Java-Methods})
 
 Hooking Android Java source code using Frida.
 
-
-
-## Target 3
+## [Hooking Android C Functions](#{name=Hooking-Android-C-Functions})
 
 Hooking Android C source code using Frida.
