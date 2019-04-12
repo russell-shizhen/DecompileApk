@@ -241,3 +241,33 @@ Hooking Android Java source code using Frida.
 ## [Hooking Android C Functions](#{name=Hooking-Android-C-Functions})
 
 Hooking Android C source code using Frida.
+
+1. Decompile APK
+
+   Firstly, decompile the apk using apktool to extract the shared library, i.e. `libnative-lib.so`.
+
+    ```bash
+    cd DecompileApk/app/release
+    apktool d --no-res app-release.apk
+    ```
+
+2. Find the target JNI method
+
+   Secondly, use below command to find the JNI function to hook.
+
+    ```bash
+    nm --demangle --dynamic app-release/lib/x86/libnative-lib.so
+    ```
+
+    You should see below outputs:
+
+    ```bash
+    00004d10 T Java_com_arophix_decompileapk_MainActivity_stringFromJNI
+    000090b0 T std::bad_typeid::what() const
+    00005cf0 T std::bad_exception::what() const
+    00005e70 T std::bad_array_length::what() const
+    00005df0 T std::bad_array_new_length::what() const
+    00008ff0 T std::bad_cast::what() const
+    ...
+    ```
+    
