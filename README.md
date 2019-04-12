@@ -6,6 +6,7 @@
 2. [Tamper Smali Code](#Tamper-Smali-Code)
 3. [Hooking Android Java Methods](#Hooking-Android-Java-Methods)
 4. [Hooking Android C Functions](#Hooking-Android-C-Functions)
+5. [References](#References)
 
 ## [Environment Setup (macOS mojave)](#{name=Environment-Setup})
 
@@ -18,13 +19,13 @@ All the steps mentioned below are on macOS Mojave
     Run command `$ pip --version` and `$ pip3 --version` to check which *pip* is from at **Python 3x**.  E.g. you should see version information like below:
 
     ```bash
-    pip 19.0.3 from /usr/local/lib/python3.7/site-packages/pip (python 3.7)
+    $ pip 19.0.3 from /usr/local/lib/python3.7/site-packages/pip (python 3.7)
     ```
 
     Then run the right **pip** command to install `frida-tools`, e.g.  `pip3` 
 
     ```bash
-    pip3 install frida-tools
+    $ pip3 install frida-tools
     ```
 
     Success outputs:
@@ -43,9 +44,9 @@ All the steps mentioned below are on macOS Mojave
     Copy the `cat` binary to a temporary folder, e.g., `/tmp/cat` then run `cat` from that directory:
 
     ```bash
-    mkdir ~/frida
-    cp /bin/cat /frida/cat
-    /frida/cat
+    $ mkdir ~/frida
+    $ cp /bin/cat /frida/cat
+    $ /frida/cat
     ```
 
     In another terminal, make a file `example.py` with the following contents:
@@ -73,7 +74,7 @@ All the steps mentioned below are on macOS Mojave
     Then run the `example.py` script with below command
 
     ```bash
-    python3 example.py
+    $ python3 example.py
     ```
 
     The output should be something similar to this (depending on your platform and library versions):
@@ -87,7 +88,7 @@ All the steps mentioned below are on macOS Mojave
     Make sure  `adb`  can see your device:
 
     ```bash
-    adb devices -l
+    $ adb devices -l
     ```
 
     This will also ensure that the adb daemon is running on your desktop, which allows Frida to discover and communicate with your device regardless of whether you’ve got it hooked up through USB or WiFi.
@@ -99,10 +100,10 @@ Below steps are based on **Android Emulator Nexus 6P (x86)** api 23 on macOS Maj
 First off, download the latest `frida-server` for Android from  [frida-server releases page](https://github.com/frida/frida/releases), e.g. for Android `x86` emulator, you should download [frida-server-12.4.7-android-x86.xz](https://github.com/frida/frida/releases/download/12.4.7/frida-server-12.4.7-android-x86.xz),  and get it run on your emulator:
 
 ```bash
-adb root # might be required 
-adb push frida-server /data/local/tmp/
-adb shell "chmod 755 /data/local/tmp/frida-server"
-adb shell "/data/local/tmp/frida-server &"
+$ adb root # might be required
+$ adb push frida-server /data/local/tmp/
+$ adb shell "chmod 755 /data/local/tmp/frida-server"
+$ adb shell "/data/local/tmp/frida-server &"
 ```
 
 For the last step, if you see below error:
@@ -171,8 +172,8 @@ To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperin
 3. Decompile it using **apktool**.
 
     ```bash
-    cd <your-path>/DecompileApk/app/release/
-    apktool d --no-res -f app-release.apk
+    $ cd <your-path>/DecompileApk/app/release/
+    $ apktool d --no-res -f app-release.apk
     ```
 
     You will see below outputs
@@ -219,7 +220,7 @@ To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperin
 8. Sign the apk using **apksigner** and keystore located at `DecompileApk/app/decompileapk.jks` (please modify the paths for keystore and apk per your own case accordingly),
 
    ```bash
-    <ANDROID_HOME>/sdk/build-tools/28.0.3/apksigner sign --ks ../decompileapk.jks app-release.apk
+   $ <ANDROID_HOME>/sdk/build-tools/28.0.3/apksigner sign --ks ../decompileapk.jks app-release.apk
    ```
 
    You should see below outputs and enter the password `123456`
@@ -231,7 +232,7 @@ To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperin
 9. Install the signed apk using adb command.
 
     ```bash
-    adb install <path-to-the-tampered-apk>/app-release.apk
+    $ adb install <path-to-the-tampered-apk>/app-release.apk
     ```
 
 10. Instead of seeing `"Hello from C++"` from the screen, you should now see `"Hello, Android reverse engineer!"`.
@@ -239,6 +240,28 @@ To tamper a `Boolean` value inside Java source code, i.e. the `Boolean bTamperin
 ## [Hooking Android Java Methods](#{name=Hooking-Android-Java-Methods})
 
 Hooking Android Java source code using Frida.
+
+Find the script from [hook_java_methods.py](https://github.com/russell-shizhen/DecompileApk/blob/master/scripts/hook_java_methods.py) and run it using below command, and then click on the button of your started Android app.
+
+```bash
+$ python3 hook_java_methods.py
+
+[*] Running CTF
+[*] onClick
+[*] Called - isPhoneRooted()
+[*] onClick
+[*] Called - isPhoneRooted()
+```
+
+If you see an error like below:
+
+```bash
+$ frida.ServerNotRunningError: unable to connect to remote frida-server: closed
+```
+
+Remember that you have started `frida-server` on your emulator.
+
+Meanwhile, on your emulator screen, you shoud see the toast message changed to `Device not rooted` if success.
 
 ## [Hooking Android C Functions](#{name=Hooking-Android-C-Functions})
 
@@ -249,8 +272,8 @@ Hooking Android C source code using Frida.
    Firstly, decompile the apk using apktool to extract the shared library, i.e. `libnative-lib.so`.
 
     ```bash
-    cd DecompileApk/app/release
-    apktool d --no-res app-release.apk
+    $ cd DecompileApk/app/release
+    $ apktool d --no-res app-release.apk
     ```
 
 2. Find the target JNI method
@@ -258,7 +281,7 @@ Hooking Android C source code using Frida.
    Secondly, use below command to find the JNI function to hook.
 
     ```bash
-    nm --demangle --dynamic app-release/lib/x86/libnative-lib.so
+    $ nm --demangle --dynamic app-release/lib/x86/libnative-lib.so
     ```
 
     You should see below outputs:
@@ -288,7 +311,7 @@ Hooking Android C source code using Frida.
     If you see an error like below:
 
     ```bash
-    frida.ServerNotRunningError: unable to connect to remote frida-server: closed
+    $ frida.ServerNotRunningError: unable to connect to remote frida-server: closed
     ```
 
     Remember that you have started `frida-server` on your emulator.
@@ -312,9 +335,19 @@ Hooking Android C source code using Frida.
     If you see an error like below:
 
     ```bash
-    frida.ServerNotRunningError: unable to connect to remote frida-server: closed
+    $ frida.ServerNotRunningError: unable to connect to remote frida-server: closed
     ```
 
     Remember that you have started `frida-server` on your emulator.
 
     Meanwhile, on your emulator screen, you shoud see the text changed to `Frida is hooking this displayed text from Native layer by function address.` if success.
+
+## [References](#{name=References})
+
+- [https://www.frida.re/docs/android/](https://www.frida.re/docs/android/)
+- [https://www.frida.re/docs/examples/android/](https://www.frida.re/docs/examples/android/)
+- [https://11x256.github.io/Frida-hooking-android-part-1/](https://11x256.github.io/Frida-hooking-android-part-1/)
+- [https://github.com/antojoseph/frida-android-hooks/blob/master/hooking-native-code.py](https://github.com/antojoseph/frida-android-hooks/blob/master/hooking-native-code.py) 
+- [https://awakened1712.github.io/hacking/hacking-frida/](https://awakened1712.github.io/hacking/hacking-frida/)
+- [https://awakened1712.github.io/hacking/hacking-frida/#c-hook-a-static-function-by-resolving-its-address](https://awakened1712.github.io/hacking/hacking-frida/#c-hook-a-static-function-by-resolving-its-address)
+- [https://stackoverflow.com/questions/51811348/find-manually-registered-obfuscated-native-function-address](https://stackoverflow.com/questions/51811348/find-manually-registered-obfuscated-native-function-address)

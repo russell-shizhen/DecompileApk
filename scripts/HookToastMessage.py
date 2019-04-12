@@ -37,22 +37,7 @@ Java.perform(function () {
 });
 """
 
-hook_code = """
-    Interceptor.attach(Module.findExportByName("libc.so", "dlopen"), {
-        onEnter: function(args) {
-            console.log("args " + args);
-            console.log("dlopen called with: " + this.lib);
-        },
-        onLeave: function(retval) {
-            
-        }
-    });
-    """
-
-
-
 process = frida.get_usb_device().attach('com.arophix.decompileapk')
-# script = process.create_script(jscode)
 script = process.create_script(jscode)
 script.on('message', on_message)
 print('[*] Running CTF')
